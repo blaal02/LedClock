@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name">LED Clock</string>
+
+    <string name="settings_title">Clock settings</string>
+    <string name="section_color">LED colour</string>
+    <string name="section_orientation">Orientation</string>
+    <string name="section_display">Display</string>
+    <string name="section_date">Date format</string>
+
+    <string name="color_red">Red</string>
+    <string name="color_green">Green</string>
+    <string name="color_blue">Blue</string>
+    <string name="color_amber">Amber</string>
+    <string name="color_white">White</string>
+    <string name="color_custom">Custom colour</string>
+
+    <string name="orientation_system">Match device (auto-rotate)</string>
+    <string name="orientation_landscape">Landscape</string>
+    <string name="orientation_portrait">Portrait</string>
+    <string name="orientation_reverse_landscape">Landscape (upside down)</string>
+    <string name="orientation_reverse_portrait">Portrait (upside down)</string>
+
+    <string name="setting_24h">24-hour clock</string>
+    <string name="setting_seconds">Show seconds</string>
+    <string name="setting_weather">Show weather</string>
+    <string name="date_none">None</string>
+    <string name="section_brightness">Brightness</string>
+    <string name="setting_min_brightness">Minimum brightness: %1$d%%</string>
+    <string name="setting_fixed_brightness">Brightness (no light sensor): %1$d%%</string>
+</resources>

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Default landscape clock face (green, 12h, seconds, weather, long date) showing 12:34:56.
+     Geometry mirrors SevenSegmentClockView's layout with the slant baked into the coordinates. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <group
+        android:pivotX="54"
+        android:pivotY="54"
+        android:scaleX="1.1"
+        android:scaleY="1.1">
+
+        <!-- Unlit segments -->
+        <path
+            android:strokeColor="#1C3CFF5A"
+            android:strokeWidth="1.9"
+            android:pathData="M32.538,43.65L31.998,50.4 M40.922,52.6L40.382,59.35
+                M49.478,43.65L48.938,50.4 M48.762,52.6L48.222,59.35
+                M63.626,42.55L70.126,42.55 M61.522,52.6L60.982,59.35 M62.194,60.45L68.694,60.45" />
+        <path
+            android:strokeColor="#1C3CFF5A"
+            android:strokeWidth="0.75"
+            android:pathData="M76.61,55.62L76.448,57.65 M73.446,58.55L73.284,60.58 M80.87,55.62L80.708,57.65" />
+
+        <!-- Hours and minutes: glow, then lit segments -->
+        <path
+            android:strokeColor="#403CFF5A"
+            android:strokeWidth="3.4"
+            android:strokeLineCap="round"
+            android:pathData="M28.878,43.65L28.338,50.4 M28.162,52.6L27.622,59.35
+                M33.926,42.55L40.426,42.55 M41.638,43.65L41.098,50.4 M33.21,51.5L39.71,51.5
+                M31.822,52.6L31.282,59.35 M32.494,60.45L38.994,60.45
+                M50.866,42.55L57.366,42.55 M58.578,43.65L58.038,50.4 M50.15,51.5L56.65,51.5
+                M57.862,52.6L57.322,59.35 M49.434,60.45L55.934,60.45
+                M62.238,43.65L61.698,50.4 M62.91,51.5L69.41,51.5 M71.338,43.65L70.798,50.4
+                M70.622,52.6L70.082,59.35" />
+        <path
+            android:strokeColor="#3CFF5A"
+            android:strokeWidth="1.9"
+            android:pathData="M28.878,43.65L28.338,50.4 M28.162,52.6L27.622,59.35
+                M33.926,42.55L40.426,42.55 M41.638,43.65L41.098,50.4 M33.21,51.5L39.71,51.5
+                M31.822,52.6L31.282,59.35 M32.494,60.45L38.994,60.45
+                M50.866,42.55L57.366,42.55 M58.578,43.65L58.038,50.4 M50.15,51.5L56.65,51.5
+                M57.862,52.6L57.322,59.35 M49.434,60.45L55.934,60.45
+                M62.238,43.65L61.698,50.4 M62.91,51.5L69.41,51.5 M71.338,43.65L70.798,50.4
+                M70.622,52.6L70.082,59.35" />
+
+        <!-- Colon -->
+        <path
+            android:fillColor="#3CFF5A"
+            android:pathData="M44.107,47.54a1.14,1.14 0,1 0,2.28 0a1.14,1.14 0,1 0,-2.28 0z
+                M43.473,55.46a1.14,1.14 0,1 0,2.28 0a1.14,1.14 0,1 0,-2.28 0z" />
+
+        <!-- Seconds -->
+        <path
+            android:strokeColor="#3CFF5A"
+            android:strokeWidth="0.75"
+            android:pathData="M74.196,55.17L76.166,55.17 M73.962,58.1L75.932,58.1 M73.728,61.03L75.698,61.03
+                M73.68,55.62L73.518,57.65 M76.376,58.55L76.214,60.58
+                M78.456,55.17L80.426,55.17 M78.222,58.1L80.192,58.1 M77.988,61.03L79.958,61.03
+                M77.94,55.62L77.778,57.65 M77.706,58.55L77.544,60.58 M80.636,58.55L80.474,60.58" />
+
+        <!-- Weather: sun -->
+        <path
+            android:strokeColor="#3CFF5A"
+            android:strokeWidth="0.385"
+            android:strokeLineCap="round"
+            android:pathData="M32.31,64.425a0.94,0.94 0,1 0,1.88 0a0.94,0.94 0,1 0,-1.88 0z
+                M34.74,64.425L35.45,64.425 M31.76,64.425L31.05,64.425
+                M33.25,62.935L33.25,62.225 M33.25,65.915L33.25,66.625
+                M34.303,65.478L34.806,65.981 M32.197,65.478L31.694,65.981
+                M34.303,63.372L34.806,62.869 M32.197,63.372L31.694,62.869" />
+
+        <!-- Temperature and long date, as text-like bars -->
+        <path
+            android:strokeColor="#3CFF5A"
+            android:strokeWidth="1.4"
+            android:strokeLineCap="round"
+            android:pathData="M37.3,64.425L39.5,64.425
+                M45.1,64.425L53.1,64.425 M56.1,64.425L65.5,64.425
+                M68.5,64.425L69.7,64.425 M72.7,64.425L76.7,64.425" />
+    </group>
+</vector>
