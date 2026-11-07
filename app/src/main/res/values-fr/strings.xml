@@ -1,0 +1,35 @@
+<resources>
+    <string name="settings_title">Réglages de l\'horloge</string>
+    <string name="section_color">Couleur des LED</string>
+    <string name="section_orientation">Orientation</string>
+    <string name="section_display">Affichage</string>
+    <string name="section_date">Format de la date</string>
+
+    <string name="color_red">Rouge</string>
+    <string name="color_green">Vert</string>
+    <string name="color_blue">Bleu</string>
+    <string name="color_amber">Ambre</string>
+    <string name="color_white">Blanc</string>
+    <string name="color_custom">Couleur personnalisée</string>
+
+    <string name="orientation_system">Comme l\'appareil (rotation auto)</string>
+    <string name="orientation_landscape">Paysage</string>
+    <string name="orientation_portrait">Portrait</string>
+    <string name="orientation_reverse_landscape">Paysage (inversé)</string>
+    <string name="orientation_reverse_portrait">Portrait (inversé)</string>
+
+    <string name="setting_24h">Format 24 heures</string>
+    <string name="setting_seconds">Afficher les secondes</string>
+    <string name="setting_weather">Afficher la météo</string>
+    <string name="setting_ampm">Afficher AM/PM</string>
+    <string name="setting_alarm">Afficher la prochaine alarme (dans les 24 h)</string>
+
+    <string name="location_intro_title">La météo a besoin de votre position</string>
+    <string name="location_intro_message">LED Clock utilise votre position approximative pour afficher les prévisions météo de l\'endroit où vous vous trouvez.\n\nC\'est facultatif. Si vous n\'autorisez pas l\'accès à la position, l\'horloge fonctionne normalement, mais la météo n\'est pas affichée. Vous pourrez activer la météo plus tard dans les réglages (appui long sur l\'horloge).</string>
+    <string name="location_intro_continue">Continuer</string>
+    <string name="location_intro_decline">Non merci</string>
+    <string name="date_none">Aucun</string>
+    <string name="section_brightness">Luminosité</string>
+    <string name="setting_min_brightness">Luminosité minimale : %1$d %%</string>
+    <string name="setting_fixed_brightness">Luminosité (pas de capteur de lumière) : %1$d %%</string>
+</resources>

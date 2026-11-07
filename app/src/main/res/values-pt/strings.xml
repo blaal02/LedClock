@@ -1,0 +1,35 @@
+<resources>
+    <string name="settings_title">Configurações do relógio</string>
+    <string name="section_color">Cor do LED</string>
+    <string name="section_orientation">Orientação</string>
+    <string name="section_display">Exibição</string>
+    <string name="section_date">Formato da data</string>
+
+    <string name="color_red">Vermelho</string>
+    <string name="color_green">Verde</string>
+    <string name="color_blue">Azul</string>
+    <string name="color_amber">Âmbar</string>
+    <string name="color_white">Branco</string>
+    <string name="color_custom">Cor personalizada</string>
+
+    <string name="orientation_system">Igual ao dispositivo (girar automaticamente)</string>
+    <string name="orientation_landscape">Paisagem</string>
+    <string name="orientation_portrait">Retrato</string>
+    <string name="orientation_reverse_landscape">Paisagem (invertida)</string>
+    <string name="orientation_reverse_portrait">Retrato (invertido)</string>
+
+    <string name="setting_24h">Formato de 24 horas</string>
+    <string name="setting_seconds">Mostrar segundos</string>
+    <string name="setting_weather">Mostrar a previsão do tempo</string>
+    <string name="setting_ampm">Mostrar AM/PM</string>
+    <string name="setting_alarm">Mostrar o próximo alarme (nas próximas 24 horas)</string>
+
+    <string name="location_intro_title">A previsão do tempo precisa da sua localização</string>
+    <string name="location_intro_message">O LED Clock usa sua localização aproximada para mostrar a previsão do tempo de onde você está.\n\nIsso é opcional. Se você não permitir o acesso à localização, o relógio funciona normalmente, mas a previsão do tempo não é exibida. Você pode ativá-la depois nas configurações (toque e mantenha pressionado o relógio).</string>
+    <string name="location_intro_continue">Continuar</string>
+    <string name="location_intro_decline">Agora não</string>
+    <string name="date_none">Nenhum</string>
+    <string name="section_brightness">Brilho</string>
+    <string name="setting_min_brightness">Brilho mínimo: %1$d%%</string>
+    <string name="setting_fixed_brightness">Brilho (sem sensor de luz): %1$d%%</string>
+</resources>

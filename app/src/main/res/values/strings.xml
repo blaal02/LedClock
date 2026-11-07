@@ -1,8 +1,8 @@
 <resources>
-    <string name="app_name">LED Clock</string>
+    <string name="app_name" translatable="false">LED Clock</string>
 
     <string name="settings_title">Clock settings</string>
-    <string name="section_color">LED colour</string>
+    <string name="section_color">LED color</string>
     <string name="section_orientation">Orientation</string>
     <string name="section_display">Display</string>
     <string name="section_date">Date format</string>
@@ -12,7 +12,7 @@
     <string name="color_blue">Blue</string>
     <string name="color_amber">Amber</string>
     <string name="color_white">White</string>
-    <string name="color_custom">Custom colour</string>
+    <string name="color_custom">Custom color</string>
 
     <string name="orientation_system">Match device (auto-rotate)</string>
     <string name="orientation_landscape">Landscape</string>
@@ -23,6 +23,13 @@
     <string name="setting_24h">24-hour clock</string>
     <string name="setting_seconds">Show seconds</string>
     <string name="setting_weather">Show weather</string>
+    <string name="setting_ampm">Show AM/PM</string>
+    <string name="setting_alarm">Show next alarm (within 24 hours)</string>
+
+    <string name="location_intro_title">Weather needs your location</string>
+    <string name="location_intro_message">LED Clock uses your approximate location to show the weather forecast for where you are.\n\nThis is optional. If you don\'t allow location access, the clock works normally but the weather isn\'t shown. You can turn weather on later in settings (long-press the clock).</string>
+    <string name="location_intro_continue">Continue</string>
+    <string name="location_intro_decline">No thanks</string>
     <string name="date_none">None</string>
     <string name="section_brightness">Brightness</string>
     <string name="setting_min_brightness">Minimum brightness: %1$d%%</string>

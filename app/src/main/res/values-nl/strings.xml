@@ -1,0 +1,35 @@
+<resources>
+    <string name="settings_title">Klokinstellingen</string>
+    <string name="section_color">LED-kleur</string>
+    <string name="section_orientation">Stand</string>
+    <string name="section_display">Weergave</string>
+    <string name="section_date">Datumnotatie</string>
+
+    <string name="color_red">Rood</string>
+    <string name="color_green">Groen</string>
+    <string name="color_blue">Blauw</string>
+    <string name="color_amber">Amber</string>
+    <string name="color_white">Wit</string>
+    <string name="color_custom">Aangepaste kleur</string>
+
+    <string name="orientation_system">Zoals apparaat (automatisch draaien)</string>
+    <string name="orientation_landscape">Liggend</string>
+    <string name="orientation_portrait">Staand</string>
+    <string name="orientation_reverse_landscape">Liggend (ondersteboven)</string>
+    <string name="orientation_reverse_portrait">Staand (ondersteboven)</string>
+
+    <string name="setting_24h">24-uursklok</string>
+    <string name="setting_seconds">Seconden tonen</string>
+    <string name="setting_weather">Weer tonen</string>
+    <string name="setting_ampm">AM/PM tonen</string>
+    <string name="setting_alarm">Volgende wekker tonen (binnen 24 uur)</string>
+
+    <string name="location_intro_title">Voor het weer is je locatie nodig</string>
+    <string name="location_intro_message">LED Clock gebruikt je geschatte locatie om de weersverwachting te tonen voor de plek waar je bent.\n\nDit is optioneel. Als je geen toegang tot je locatie geeft, werkt de klok normaal, maar wordt het weer niet getoond. Je kunt het weer later aanzetten in de instellingen (houd de klok lang ingedrukt).</string>
+    <string name="location_intro_continue">Doorgaan</string>
+    <string name="location_intro_decline">Nee, bedankt</string>
+    <string name="date_none">Geen</string>
+    <string name="section_brightness">Helderheid</string>
+    <string name="setting_min_brightness">Minimale helderheid: %1$d%%</string>
+    <string name="setting_fixed_brightness">Helderheid (geen lichtsensor): %1$d%%</string>
+</resources>

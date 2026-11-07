@@ -20,6 +20,7 @@ import android.widget.ScrollView
 import android.widget.SeekBar
 import android.widget.Switch
 import android.widget.TextView
+import android.widget.Toolbar
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import java.text.SimpleDateFormat
@@ -84,16 +85,28 @@ class SettingsActivity : Activity() {
 
         // ---- Display ----
         content.addView(header(R.string.section_display))
+        lateinit var amPmSwitch: Switch
         content.addView(switch(R.string.setting_24h, settings.use24h) {
             settings = settings.copy(use24h = it)
             save()
+            amPmSwitch.isEnabled = !it
         })
+        // AM/PM only applies to the 12-hour clock.
+        amPmSwitch = switch(R.string.setting_ampm, settings.showAmPm) {
+            settings = settings.copy(showAmPm = it)
+            save()
+        }.apply { isEnabled = !settings.use24h }
+        content.addView(amPmSwitch)
         content.addView(switch(R.string.setting_seconds, settings.showSeconds) {
             settings = settings.copy(showSeconds = it)
             save()
         })
         content.addView(switch(R.string.setting_weather, settings.showWeather) {
             settings = settings.copy(showWeather = it)
+            save()
+        })
+        content.addView(switch(R.string.setting_alarm, settings.showAlarm) {
+            settings = settings.copy(showAlarm = it)
             save()
         })
 
@@ -119,16 +132,26 @@ class SettingsActivity : Activity() {
             clipToPadding = false
             addView(content)
         }
-        // Edge-to-edge (enforced from API 35): keep content clear of the nav bar and cutouts.
-        // The framework action bar already handles the status bar at the top.
-        ViewCompat.setOnApplyWindowInsetsListener(scroll) { v, insets ->
+        // The toolbar lives in our layout (theme has no window action bar), because the
+        // framework action bar doesn't reliably keep content below it when edge-to-edge.
+        val toolbar = Toolbar(this)
+        val root = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            addView(toolbar, LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT))
+            addView(scroll, LinearLayout.LayoutParams(MATCH_PARENT, 0, 1f))
+        }
+        // Edge-to-edge (enforced from API 35): keep clear of the system bars and cutouts. The
+        // bottom inset goes on the scroll view so content can scroll behind the nav bar.
+        ViewCompat.setOnApplyWindowInsetsListener(root) { v, insets ->
             val bars = insets.getInsets(
                 WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
             )
-            v.setPadding(bars.left, 0, bars.right, bars.bottom)
+            v.setPadding(bars.left, bars.top, bars.right, 0)
+            scroll.setPadding(0, 0, 0, bars.bottom)
             insets
         }
-        setContentView(scroll)
+        setContentView(root)
+        setActionBar(toolbar)
     }
 
     private fun save() = settings.save(this)

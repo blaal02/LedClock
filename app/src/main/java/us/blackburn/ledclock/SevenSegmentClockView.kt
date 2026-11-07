@@ -1,6 +1,10 @@
 package us.blackburn.ledclock
 
+import android.app.AlarmManager
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.graphics.BlurMaskFilter
 import android.graphics.Canvas
 import android.graphics.Color
@@ -12,7 +16,9 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.text.format.DateFormat
 import android.view.View
+import androidx.core.content.ContextCompat
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -21,11 +27,13 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import kotlin.math.abs
+import kotlin.math.hypot
 import kotlin.math.ln
 import kotlin.math.min
 
 /**
- * Full-screen 7-segment LED clock:  HH:MM (large) + SS (1/3 size), day/date and weather below.
+ * Full-screen 7-segment LED clock:  HH:MM (large) + AM/PM (14-segment) over SS (1/3 size), with weather,
+ * day/date and the next alarm below.
  * Appearance is driven by [applySettings]. Content stays clear of any display cutout (camera).
  * Ambient light sensor automatically adjusts display brightness.
  */
@@ -60,8 +68,20 @@ class SevenSegmentClockView(context: Context) : View(context), SensorEventListen
         color = Color.BLACK
     }
     private val path = Path()
+    private val arcRect = RectF()
     private var dateFormat: SimpleDateFormat? = settings.dateFormat.pattern?.let {
         SimpleDateFormat(it, Locale.getDefault())
+    }
+
+    /** Trigger time of the next system alarm clock, if any. */
+    private var nextAlarm: Long? = null
+    private var alarmFormat = timeFormat(settings.use24h)
+    private val alarmManager = context.getSystemService(AlarmManager::class.java)
+    private val alarmReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            refreshAlarm()
+            invalidate()
+        }
     }
 
     /** Display-cutout safe insets; the layout is fitted inside the remaining area. */
@@ -94,6 +114,8 @@ class SevenSegmentClockView(context: Context) : View(context), SensorEventListen
     fun applySettings(newSettings: ClockSettings) {
         settings = newSettings
         dateFormat = newSettings.dateFormat.pattern?.let { SimpleDateFormat(it, Locale.getDefault()) }
+        alarmFormat = timeFormat(newSettings.use24h)
+        refreshAlarm()
         if (!newSettings.showWeather) weather = null
         if (!hasLightSensor) brightnessFactor = newSettings.minBrightness
         lastLux?.let { brightnessFactor = brightnessForLux(it) }
@@ -104,6 +126,23 @@ class SevenSegmentClockView(context: Context) : View(context), SensorEventListen
     fun weatherPermissionGranted() = weatherProvider.hasPermission()
     fun startWeather() = weatherProvider.start()
     fun stopWeather() = weatherProvider.stop()
+
+    /** Locale-appropriate hours:minutes; the 12-hour form always includes the AM/PM marker. */
+    private fun timeFormat(use24h: Boolean) = SimpleDateFormat(
+        DateFormat.getBestDateTimePattern(Locale.getDefault(), if (use24h) "Hm" else "hma"),
+        Locale.getDefault()
+    )
+
+    private fun refreshAlarm() {
+        nextAlarm = alarmManager?.nextAlarmClock?.triggerTime
+    }
+
+    /** The next alarm's trigger time, if it's enabled in settings and due within 24 hours. */
+    private fun upcomingAlarm(): Long? {
+        if (!settings.showAlarm) return null
+        val at = nextAlarm ?: return null
+        return at.takeIf { it - System.currentTimeMillis() in 0..ALARM_WINDOW_MS }
+    }
 
     private fun applyColor() {
         val c = settings.color
@@ -130,6 +169,12 @@ class SevenSegmentClockView(context: Context) : View(context), SensorEventListen
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         post(ticker)
+        refreshAlarm()
+        ContextCompat.registerReceiver(
+            context, alarmReceiver,
+            IntentFilter(AlarmManager.ACTION_NEXT_ALARM_CLOCK_CHANGED),
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        )
         val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
         val lightSensor = sensorManager?.getDefaultSensor(Sensor.TYPE_LIGHT)
         if (lightSensor != null) {
@@ -140,6 +185,7 @@ class SevenSegmentClockView(context: Context) : View(context), SensorEventListen
     override fun onDetachedFromWindow() {
         val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
         sensorManager?.unregisterListener(this)
+        context.unregisterReceiver(alarmReceiver)
         removeCallbacks(ticker)
         super.onDetachedFromWindow()
     }
@@ -180,7 +226,8 @@ class SevenSegmentClockView(context: Context) : View(context), SensorEventListen
         val sec = now.get(Calendar.SECOND)
 
         // ---- Layout, in units of one big-digit width (s) ----
-        // Row 1: [H][H] [:] [M][M]  gap  [s][s] (seconds at 1/3 size, bottom aligned)
+        // Row 1: [H][H] [:] [M][M]  gap  [AM/PM over s s] (1/3 size; AM/PM top aligned,
+        // seconds bottom aligned)
         // In 12h mode the leading hour digit is only ever "1", so it shrinks to its right-hand
         // segments and the freed width goes to the remaining digits.
         val digitGap = 0.16f
@@ -189,11 +236,16 @@ class SevenSegmentClockView(context: Context) : View(context), SensorEventListen
         val leadWidth = if (settings.use24h) 1f else SEGMENT_THICKNESS
         // The slant pushes the bottom of the leading digit left of its box; reserve room for it.
         val slantOverhang = SLANT * 1.8f / 2f
-        val secondsWidth = if (settings.showSeconds) secGap + (2f + digitGap) / 3f else 0f
-        val totalUnitsW = slantOverhang + leadWidth + 3f + colonWidth + 4 * digitGap + secondsWidth
+        val showAmPm = settings.showAmPm && !settings.use24h
+        val secDigitsW = if (settings.showSeconds) (2f + digitGap) / 3f else 0f
+        // Two 14-segment characters, each as wide as a seconds digit.
+        val amPmW = if (showAmPm) (2f + digitGap) / 3f else 0f
+        val smallColumnW = maxOf(secDigitsW, amPmW)
+        val columnWidth = if (smallColumnW > 0f) secGap + smallColumnW else 0f
+        val totalUnitsW = slantOverhang + leadWidth + 3f + colonWidth + 4 * digitGap + columnWidth
         // The info row is dropped entirely when there's nothing to show in it.
-        val showInfo = settings.showWeather || dateFormat != null
-        val totalUnitsH = if (showInfo) 1.8f + 0.10f + 0.35f else 1.8f // time + gap + info row
+        val showInfo = settings.showWeather || dateFormat != null || settings.showAlarm
+        val totalUnitsH = if (showInfo) 1.8f + INFO_GAP + 0.35f else 1.8f // time + gap + info row
         // Fit inside the area not covered by a camera cutout.
         val areaL = cutout.left.toFloat()
         val areaT = cutout.top.toFloat()
@@ -232,29 +284,46 @@ class SevenSegmentClockView(context: Context) : View(context), SensorEventListen
         drawDigit(canvas, x, y0, w, h, t, minute / 10); x += w + gap
         drawDigit(canvas, x, y0, w, h, t, minute % 10); x += w + secGap * s
 
+        glowPaint.maskFilter = BlurMaskFilter(st * 0.8f, BlurMaskFilter.Blur.NORMAL)
+        if (showAmPm) {
+            // Same width as a seconds digit, so a little shorter than one.
+            val ch = sw / AMPM_ASPECT
+            val ct = st * 0.7f
+            val first = if (now.get(Calendar.AM_PM) == Calendar.AM) SEG14_LETTER_A else SEG14_LETTER_P
+            drawChar14(canvas, x, y0, sw, ch, ct, first)
+            drawChar14(canvas, x + sw + sgap, y0, sw, ch, ct, SEG14_LETTER_M)
+        }
         if (settings.showSeconds) {
-            glowPaint.maskFilter = BlurMaskFilter(st * 0.8f, BlurMaskFilter.Blur.NORMAL)
             val secY = y0 + h - sh
             drawDigit(canvas, x, secY, sw, sh, st, sec / 10); x += sw + sgap
             drawDigit(canvas, x, secY, sw, sh, st, sec % 10)
         }
         canvas.restore()
 
-        if (showInfo) drawInfoRow(canvas, y0 + (1.8f + 0.10f) * s + 0.175f * s, s, areaL, areaW)
+        if (showInfo) drawInfoRow(canvas, y0 + (1.8f + INFO_GAP) * s + 0.175f * s, s, areaL, areaW)
     }
 
-    /** Weather icon + temperature, then day/date, centred on [rowCy] within [areaL]..+[areaW]. */
+    /**
+     * Weather icon + temperature, day/date, then alarm icon + next alarm time, centred on
+     * [rowCy] within [areaL]..+[areaW].
+     */
     private fun drawInfoRow(canvas: Canvas, rowCy: Float, s: Float, areaL: Float, areaW: Float) {
         val dateText = dateFormat?.format(Date()) ?: ""
         val wx = if (settings.showWeather) weather else null
         val tempText = wx?.let { "${it.temp}°" } ?: ""
+        val alarmText = upcomingAlarm()?.let { alarmFormat.format(Date(it)) } ?: ""
 
         // Measure at the nominal size, then shrink the whole row if it would overflow the width
         // (the digits, and so s, are larger in 12h mode).
         textPaint.textSize = 0.25f * s
-        val spacerW = if (wx != null && dateText.isNotEmpty()) 0.30f * s else 0f
-        val weatherW = if (wx != null) 0.60f * s + textPaint.measureText(tempText) else 0f
-        val rowW = weatherW + spacerW + textPaint.measureText(dateText)
+        val spacerW = 0.30f * s
+        val parts = listOfNotNull(
+            if (wx != null) 0.60f * s + textPaint.measureText(tempText) else null,
+            if (dateText.isNotEmpty()) textPaint.measureText(dateText) else null,
+            if (alarmText.isNotEmpty()) 0.60f * s + textPaint.measureText(alarmText) else null,
+        )
+        if (parts.isEmpty()) return
+        val rowW = parts.sum() + spacerW * (parts.size - 1)
         val k = if (rowW > areaW * 0.94f) areaW * 0.94f / rowW else 1f
 
         textPaint.textSize = 0.25f * s * k
@@ -269,7 +338,33 @@ class SevenSegmentClockView(context: Context) : View(context), SensorEventListen
             canvas.drawText(tempText, rx, baseline, textPaint)
             rx += textPaint.measureText(tempText) + spacerW * k
         }
-        canvas.drawText(dateText, rx, baseline, textPaint)
+        if (dateText.isNotEmpty()) {
+            canvas.drawText(dateText, rx, baseline, textPaint)
+            rx += textPaint.measureText(dateText) + spacerW * k
+        }
+        if (alarmText.isNotEmpty()) {
+            drawAlarmIcon(canvas, rx + iconBox / 2f, rowCy, iconBox)
+            rx += iconBox + 0.10f * s * k
+            canvas.drawText(alarmText, rx, baseline, textPaint)
+        }
+    }
+
+    /** Outline alarm clock: round face with hands, two bells on top and two feet. */
+    private fun drawAlarmIcon(c: Canvas, cx: Float, cy: Float, size: Float) {
+        strokePaint.strokeWidth = size * 0.07f
+        val r = size * 0.28f
+        val fy = cy + size * 0.04f
+        c.drawCircle(cx, fy, r, strokePaint)
+        c.drawLine(cx, fy, cx, fy - r * 0.6f, strokePaint)
+        c.drawLine(cx, fy, cx + r * 0.45f, fy, strokePaint)
+        val br = size * 0.13f
+        val by = cy - size * 0.30f
+        arcRect.set(cx - size * 0.32f - br, by - br, cx - size * 0.32f + br, by + br)
+        c.drawArc(arcRect, 180f, 90f, false, strokePaint)
+        arcRect.set(cx + size * 0.32f - br, by - br, cx + size * 0.32f + br, by + br)
+        c.drawArc(arcRect, 270f, 90f, false, strokePaint)
+        c.drawLine(cx - r * 0.6f, fy + r * 0.8f, cx - r * 0.95f, fy + r * 1.25f, strokePaint)
+        c.drawLine(cx + r * 0.6f, fy + r * 0.8f, cx + r * 0.95f, fy + r * 1.25f, strokePaint)
     }
 
     // ------------------------------------------------------------------ digits
@@ -302,6 +397,57 @@ class SevenSegmentClockView(context: Context) : View(context), SensorEventListen
         seg(4, false, mid + s, bot - s, l)
         seg(5, false, top + s, mid - s, l)
         seg(6, true, l + s, r - s, mid)
+    }
+
+    /**
+     * 14-segment character: the 7-segment outline with the middle bar split in two, plus
+     * centre verticals and four diagonals. [mask] uses the SEG14_* bits.
+     */
+    private fun drawChar14(c: Canvas, x: Float, y: Float, w: Float, h: Float, t: Float, mask: Int) {
+        val l = x + t / 2f
+        val r = x + w - t / 2f
+        val cx = x + w / 2f
+        val top = y + t / 2f
+        val mid = y + h / 2f
+        val bot = y + h - t / 2f
+        val s = t * 0.12f
+        val dt = t * 0.8f // diagonal thickness
+
+        fun light(bit: Int) {
+            if (mask and (1 shl bit) != 0) {
+                c.drawPath(path, glowPaint)
+                c.drawPath(path, onPaint)
+            } else {
+                c.drawPath(path, offPaint)
+            }
+        }
+        buildSegment(true, l + s, r - s, top, t); light(SEG14_A)
+        buildSegment(false, top + s, mid - s, r, t); light(SEG14_B)
+        buildSegment(false, mid + s, bot - s, r, t); light(SEG14_C)
+        buildSegment(true, l + s, r - s, bot, t); light(SEG14_D)
+        buildSegment(false, mid + s, bot - s, l, t); light(SEG14_E)
+        buildSegment(false, top + s, mid - s, l, t); light(SEG14_F)
+        buildSegment(true, l + s, cx - s, mid, t); light(SEG14_G1)
+        buildSegment(true, cx + s, r - s, mid, t); light(SEG14_G2)
+        buildSegment(false, top + s, mid - s, cx, t); light(SEG14_I)
+        buildSegment(false, mid + s, bot - s, cx, t); light(SEG14_L)
+        buildDiagonal(l + t, top + t, cx - t * 0.6f, mid - t * 0.8f, dt); light(SEG14_H)
+        buildDiagonal(r - t, top + t, cx + t * 0.6f, mid - t * 0.8f, dt); light(SEG14_J)
+        buildDiagonal(l + t, bot - t, cx - t * 0.6f, mid + t * 0.8f, dt); light(SEG14_K)
+        buildDiagonal(r - t, bot - t, cx + t * 0.6f, mid + t * 0.8f, dt); light(SEG14_N)
+    }
+
+    /** Straight bar of thickness [th] from (x1, y1) to (x2, y2). */
+    private fun buildDiagonal(x1: Float, y1: Float, x2: Float, y2: Float, th: Float) {
+        val len = hypot(x2 - x1, y2 - y1)
+        val nx = -(y2 - y1) / len * th / 2f
+        val ny = (x2 - x1) / len * th / 2f
+        path.reset()
+        path.moveTo(x1 + nx, y1 + ny)
+        path.lineTo(x2 + nx, y2 + ny)
+        path.lineTo(x2 - nx, y2 - ny)
+        path.lineTo(x1 - nx, y1 - ny)
+        path.close()
     }
 
     private fun buildSegment(horizontal: Boolean, a: Float, b: Float, fixed: Float, t: Float) {
@@ -429,5 +575,38 @@ class SevenSegmentClockView(context: Context) : View(context), SensorEventListen
 
         /** Horizontal skew of the time row. */
         const val SLANT = 0.08f
+
+        /** Width / height of a 14-segment AM/PM character (wider than digits, for the diagonals). */
+        const val AMPM_ASPECT = 0.75f
+
+        /** Vertical gap between the time row and the info row, in big-digit widths. */
+        const val INFO_GAP = 0.16f
+
+        // 14-segment bits: outline A-F as for 7 segments, split middle G1/G2, centre verticals
+        // I (upper) and L (lower), diagonals H (upper-left), J (upper-right), K (lower-left),
+        // N (lower-right).
+        const val SEG14_A = 0
+        const val SEG14_B = 1
+        const val SEG14_C = 2
+        const val SEG14_D = 3
+        const val SEG14_E = 4
+        const val SEG14_F = 5
+        const val SEG14_G1 = 6
+        const val SEG14_G2 = 7
+        const val SEG14_H = 8
+        const val SEG14_I = 9
+        const val SEG14_J = 10
+        const val SEG14_K = 11
+        const val SEG14_L = 12
+        const val SEG14_N = 13
+
+        const val SEG14_LETTER_A = (1 shl SEG14_A) or (1 shl SEG14_B) or (1 shl SEG14_C) or
+            (1 shl SEG14_E) or (1 shl SEG14_F) or (1 shl SEG14_G1) or (1 shl SEG14_G2)
+        const val SEG14_LETTER_P = (1 shl SEG14_A) or (1 shl SEG14_B) or (1 shl SEG14_E) or
+            (1 shl SEG14_F) or (1 shl SEG14_G1) or (1 shl SEG14_G2)
+        const val SEG14_LETTER_M = (1 shl SEG14_B) or (1 shl SEG14_C) or (1 shl SEG14_E) or
+            (1 shl SEG14_F) or (1 shl SEG14_H) or (1 shl SEG14_J)
+
+        const val ALARM_WINDOW_MS = 24 * 60 * 60 * 1000L
     }
 }

@@ -1,0 +1,35 @@
+<resources>
+    <string name="settings_title">إعدادات الساعة</string>
+    <string name="section_color">لون LED</string>
+    <string name="section_orientation">الاتجاه</string>
+    <string name="section_display">العرض</string>
+    <string name="section_date">تنسيق التاريخ</string>
+
+    <string name="color_red">أحمر</string>
+    <string name="color_green">أخضر</string>
+    <string name="color_blue">أزرق</string>
+    <string name="color_amber">كهرماني</string>
+    <string name="color_white">أبيض</string>
+    <string name="color_custom">لون مخصص</string>
+
+    <string name="orientation_system">مطابقة الجهاز (تدوير تلقائي)</string>
+    <string name="orientation_landscape">أفقي</string>
+    <string name="orientation_portrait">عمودي</string>
+    <string name="orientation_reverse_landscape">أفقي (مقلوب)</string>
+    <string name="orientation_reverse_portrait">عمودي (مقلوب)</string>
+
+    <string name="setting_24h">نظام 24 ساعة</string>
+    <string name="setting_seconds">إظهار الثواني</string>
+    <string name="setting_weather">إظهار الطقس</string>
+    <string name="setting_ampm">إظهار ص/م</string>
+    <string name="setting_alarm">إظهار المنبه التالي (خلال 24 ساعة)</string>
+
+    <string name="location_intro_title">يحتاج الطقس إلى موقعك</string>
+    <string name="location_intro_message">يستخدم LED Clock موقعك التقريبي لعرض توقعات الطقس للمكان الذي تتواجد فيه.\n\nهذا اختياري. إذا لم تسمح بالوصول إلى الموقع، فستعمل الساعة بشكل طبيعي ولكن لن يظهر الطقس. يمكنك تفعيل الطقس لاحقًا من الإعدادات (اضغط مطولاً على الساعة).</string>
+    <string name="location_intro_continue">متابعة</string>
+    <string name="location_intro_decline">لا، شكرًا</string>
+    <string name="date_none">بدون</string>
+    <string name="section_brightness">السطوع</string>
+    <string name="setting_min_brightness">الحد الأدنى للسطوع: %1$d%%</string>
+    <string name="setting_fixed_brightness">السطوع (لا يوجد مستشعر ضوء): %1$d%%</string>
+</resources>

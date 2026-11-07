@@ -1,0 +1,35 @@
+<resources>
+    <string name="settings_title">घड़ी की सेटिंग</string>
+    <string name="section_color">LED का रंग</string>
+    <string name="section_orientation">स्क्रीन की दिशा</string>
+    <string name="section_display">डिस्प्ले</string>
+    <string name="section_date">तारीख का फ़ॉर्मैट</string>
+
+    <string name="color_red">लाल</string>
+    <string name="color_green">हरा</string>
+    <string name="color_blue">नीला</string>
+    <string name="color_amber">एम्बर</string>
+    <string name="color_white">सफ़ेद</string>
+    <string name="color_custom">अपनी पसंद का रंग</string>
+
+    <string name="orientation_system">डिवाइस के हिसाब से (अपने-आप घुमाएं)</string>
+    <string name="orientation_landscape">लैंडस्केप</string>
+    <string name="orientation_portrait">पोर्ट्रेट</string>
+    <string name="orientation_reverse_landscape">लैंडस्केप (उल्टा)</string>
+    <string name="orientation_reverse_portrait">पोर्ट्रेट (उल्टा)</string>
+
+    <string name="setting_24h">24 घंटे वाली घड़ी</string>
+    <string name="setting_seconds">सेकंड दिखाएं</string>
+    <string name="setting_weather">मौसम दिखाएं</string>
+    <string name="setting_ampm">AM/PM दिखाएं</string>
+    <string name="setting_alarm">अगला अलार्म दिखाएं (24 घंटे के अंदर)</string>
+
+    <string name="location_intro_title">मौसम के लिए आपकी जगह की जानकारी चाहिए</string>
+    <string name="location_intro_message">LED Clock आपकी अनुमानित जगह की जानकारी का इस्तेमाल करके, आप जहां हैं वहां का मौसम पूर्वानुमान दिखाता है.\n\nयह ज़रूरी नहीं है. अगर आप जगह की जानकारी का ऐक्सेस नहीं देते, तो घड़ी सामान्य रूप से काम करेगी, लेकिन मौसम नहीं दिखेगा. आप बाद में सेटिंग में जाकर मौसम चालू कर सकते हैं (घड़ी को दबाकर रखें).</string>
+    <string name="location_intro_continue">जारी रखें</string>
+    <string name="location_intro_decline">नहीं, रहने दें</string>
+    <string name="date_none">कोई नहीं</string>
+    <string name="section_brightness">स्क्रीन की रोशनी</string>
+    <string name="setting_min_brightness">कम से कम रोशनी: %1$d%%</string>
+    <string name="setting_fixed_brightness">रोशनी (लाइट सेंसर नहीं है): %1$d%%</string>
+</resources>

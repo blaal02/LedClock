@@ -1,0 +1,5 @@
+<resources>
+    <!-- British English: only strings that differ from the default (US English). -->
+    <string name="section_color">LED colour</string>
+    <string name="color_custom">Custom colour</string>
+</resources>

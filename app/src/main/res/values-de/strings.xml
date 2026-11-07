@@ -1,0 +1,35 @@
+<resources>
+    <string name="settings_title">Uhreinstellungen</string>
+    <string name="section_color">LED-Farbe</string>
+    <string name="section_orientation">Ausrichtung</string>
+    <string name="section_display">Anzeige</string>
+    <string name="section_date">Datumsformat</string>
+
+    <string name="color_red">Rot</string>
+    <string name="color_green">Grün</string>
+    <string name="color_blue">Blau</string>
+    <string name="color_amber">Bernstein</string>
+    <string name="color_white">Weiß</string>
+    <string name="color_custom">Eigene Farbe</string>
+
+    <string name="orientation_system">Wie Gerät (automatisch drehen)</string>
+    <string name="orientation_landscape">Querformat</string>
+    <string name="orientation_portrait">Hochformat</string>
+    <string name="orientation_reverse_landscape">Querformat (umgedreht)</string>
+    <string name="orientation_reverse_portrait">Hochformat (umgedreht)</string>
+
+    <string name="setting_24h">24-Stunden-Format</string>
+    <string name="setting_seconds">Sekunden anzeigen</string>
+    <string name="setting_weather">Wetter anzeigen</string>
+    <string name="setting_ampm">AM/PM anzeigen</string>
+    <string name="setting_alarm">Nächsten Wecker anzeigen (innerhalb von 24 Stunden)</string>
+
+    <string name="location_intro_title">Für das Wetter wird dein Standort benötigt</string>
+    <string name="location_intro_message">LED Clock verwendet deinen ungefähren Standort, um die Wettervorhersage für deinen Aufenthaltsort anzuzeigen.\n\nDas ist optional. Wenn du den Standortzugriff nicht erlaubst, funktioniert die Uhr normal, aber das Wetter wird nicht angezeigt. Du kannst das Wetter später in den Einstellungen aktivieren (Uhr lange drücken).</string>
+    <string name="location_intro_continue">Weiter</string>
+    <string name="location_intro_decline">Nein danke</string>
+    <string name="date_none">Keins</string>
+    <string name="section_brightness">Helligkeit</string>
+    <string name="setting_min_brightness">Mindesthelligkeit: %1$d %%</string>
+    <string name="setting_fixed_brightness">Helligkeit (kein Lichtsensor): %1$d %%</string>
+</resources>
