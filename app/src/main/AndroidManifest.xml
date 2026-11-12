@@ -25,6 +25,6 @@
             android:name=".SettingsActivity"
             android:exported="false"
             android:label="@string/settings_title"
-            android:theme="@android:style/Theme.DeviceDefault.NoActionBar" />
+            android:theme="@style/SettingsTheme" />
     </application>
 </manifest>

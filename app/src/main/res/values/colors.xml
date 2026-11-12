@@ -1,0 +1,4 @@
+<resources>
+    <!-- Matches the default green LED colour and the settings section headers. -->
+    <color name="led_green">#3CFF5A</color>
+</resources>

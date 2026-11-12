@@ -9,6 +9,7 @@ import android.graphics.SweepGradient
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.Gravity
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
@@ -152,6 +153,15 @@ class SettingsActivity : Activity() {
         }
         setContentView(root)
         setActionBar(toolbar)
+        actionBar?.setDisplayHomeAsUpEnabled(true) // back arrow; handled in onOptionsItemSelected
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == android.R.id.home) {
+            finish()
+            return true
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     private fun save() = settings.save(this)
