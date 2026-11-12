@@ -18,8 +18,8 @@ android {
         applicationId = "us.blackburn.ledclock"
         minSdk = 24
         targetSdk = 36
-        versionCode = 10
-        versionName = "1.0.10"
+        versionCode = 11
+        versionName = "1.0.11"
     }
     signingConfigs {
         if (keystoreProperties.containsKey("storeFile")) {

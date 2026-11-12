@@ -1,5 +1,6 @@
 package us.blackburn.ledclock
 
+import android.animation.ValueAnimator
 import android.app.AlarmManager
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -27,6 +28,7 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import kotlin.math.abs
+import kotlin.math.exp
 import kotlin.math.hypot
 import kotlin.math.ln
 import kotlin.math.min
@@ -49,7 +51,16 @@ class SevenSegmentClockView(context: Context) : View(context), SensorEventListen
 
     private var settings = ClockSettings()
     private var brightnessFactor = 1.0f
-    private var lastLux: Float? = null
+
+    // Ambient light handling. Raw readings are noisy (sensor noise, mains-powered lighting,
+    // the screen's own light), so they're averaged between ticks, low-pass filtered in the log
+    // domain, and only acted on past a dead band; changes then fade in rather than jump.
+    private var smoothedLogLux: Float? = null
+    private var rawLogLuxSum = 0f
+    private var rawLogLuxCount = 0
+    private var lastRawLogLux = 0f
+    private var targetBrightness = 1.0f
+    private var brightnessAnimator: ValueAnimator? = null
     private val hasLightSensor = ClockSettings.hasLightSensor(context)
 
     private val onPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
@@ -95,6 +106,7 @@ class SevenSegmentClockView(context: Context) : View(context), SensorEventListen
 
     private val ticker = object : Runnable {
         override fun run() {
+            updateAmbientBrightness()
             invalidate()
             postDelayed(this, 1000L - (System.currentTimeMillis() % 1000L) + 5)
         }
@@ -118,7 +130,7 @@ class SevenSegmentClockView(context: Context) : View(context), SensorEventListen
         refreshAlarm()
         if (!newSettings.showWeather) weather = null
         if (!hasLightSensor) brightnessFactor = newSettings.minBrightness
-        lastLux?.let { brightnessFactor = brightnessForLux(it) }
+        smoothedLogLux?.let { setBrightnessNow(brightnessForLogLux(it)) }
         applyColor()
         invalidate()
     }
@@ -187,32 +199,69 @@ class SevenSegmentClockView(context: Context) : View(context), SensorEventListen
         sensorManager?.unregisterListener(this)
         context.unregisterReceiver(alarmReceiver)
         removeCallbacks(ticker)
+        brightnessAnimator?.cancel()
         super.onDetachedFromWindow()
     }
 
     override fun onSensorChanged(event: SensorEvent?) {
-        if (event?.sensor?.type == Sensor.TYPE_LIGHT) {
-            val lux = event.values[0]
-            lastLux = lux
-            val target = brightnessForLux(lux)
-
-            if (abs(target - brightnessFactor) > 0.01f) {
-                brightnessFactor = target
-                applyColor()
-                invalidate()
-            }
+        if (event?.sensor?.type != Sensor.TYPE_LIGHT) return
+        val logLux = ln(event.values[0].coerceAtLeast(0f) + 1f)
+        lastRawLogLux = logLux
+        if (smoothedLogLux == null) {
+            // First reading: start at the right level straight away.
+            smoothedLogLux = logLux
+            setBrightnessNow(brightnessForLogLux(logLux))
+            applyColor()
+            invalidate()
+        } else {
+            rawLogLuxSum += logLux
+            rawLogLuxCount++
         }
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 
-    /** Log-scales ambient light to a brightness between the user's minimum and full. */
-    private fun brightnessForLux(lux: Float): Float {
+    /**
+     * Called once per tick: folds the readings since the last tick into the smoothed level and
+     * fades to a new brightness if it has moved past the dead band. Light sensors only report
+     * on change, so with no new readings the last one keeps pulling the smoothed level along.
+     */
+    private fun updateAmbientBrightness() {
+        val smoothed = smoothedLogLux ?: return
+        val sample = if (rawLogLuxCount > 0) rawLogLuxSum / rawLogLuxCount else lastRawLogLux
+        rawLogLuxSum = 0f
+        rawLogLuxCount = 0
+        val next = smoothed + LUX_SMOOTHING_ALPHA * (sample - smoothed)
+        smoothedLogLux = next
+        val target = brightnessForLogLux(next)
+        if (abs(target - targetBrightness) > BRIGHTNESS_DEAD_BAND) animateBrightnessTo(target)
+    }
+
+    private fun setBrightnessNow(brightness: Float) {
+        brightnessAnimator?.cancel()
+        brightnessFactor = brightness
+        targetBrightness = brightness
+    }
+
+    private fun animateBrightnessTo(target: Float) {
+        targetBrightness = target
+        brightnessAnimator?.cancel()
+        brightnessAnimator = ValueAnimator.ofFloat(brightnessFactor, target).apply {
+            duration = BRIGHTNESS_FADE_MS
+            addUpdateListener {
+                brightnessFactor = it.animatedValue as Float
+                applyColor()
+                invalidate()
+            }
+            start()
+        }
+    }
+
+    /** Maps ln(lux + 1) to a brightness between the user's minimum and full (full at 500 lux). */
+    private fun brightnessForLogLux(logLux: Float): Float {
         val minBrightness = settings.minBrightness
-        val maxBrightness = 1.0f
-        val maxLux = 500f
-        val normalizedRatio = (ln(lux.coerceAtLeast(0f) + 1f) / ln(maxLux + 1f)).coerceIn(0f, 1f)
-        return minBrightness + normalizedRatio * (maxBrightness - minBrightness)
+        val normalizedRatio = (logLux / ln(MAX_LUX + 1f)).coerceIn(0f, 1f)
+        return minBrightness + normalizedRatio * (1.0f - minBrightness)
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -608,5 +657,16 @@ class SevenSegmentClockView(context: Context) : View(context), SensorEventListen
             (1 shl SEG14_F) or (1 shl SEG14_H) or (1 shl SEG14_J)
 
         const val ALARM_WINDOW_MS = 24 * 60 * 60 * 1000L
+
+        /** Ambient light at which the display reaches full brightness. */
+        const val MAX_LUX = 500f
+
+        /** Per-second low-pass factor for ambient light: 1 - e^(-1s / 2s time constant). */
+        val LUX_SMOOTHING_ALPHA = 1f - exp(-0.5f)
+
+        /** Brightness changes smaller than this are ignored, so noise can't cause flicker. */
+        const val BRIGHTNESS_DEAD_BAND = 0.04f
+
+        const val BRIGHTNESS_FADE_MS = 600L
     }
 }
